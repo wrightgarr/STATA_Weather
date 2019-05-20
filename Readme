@@ -4,5 +4,5 @@ To install the -getweather- command, do the following:
 2. In the Stata Command Line, type -sysdir-. This will list Stata's system directories.
 3. In your file explorer, navigate to the directory titled "PLUS:".
 4. Create a new folder, and name it "g". Ensure that the filename is only a lowercase g, with no quotes. If a folder named "g" already exists, proceed to 5.
-5. Copy both the "getweather.ado" and "getweather.hlp" files (currently located in the "getweather" folder) to folder "g". This will allow you to call the command in Stata, and to access the help file (by typing -help getweather- in the Stata Command Line)
+5. Copy both the "getweather.ado" and "getweather.hlp" files to folder "g". This will allow you to call the command in Stata, and to access the help file (by typing -help getweather- in the Stata Command Line)
 
