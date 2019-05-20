@@ -1,0 +1,169 @@
+{smcl}
+{* *! version february 2019}{...}
+{cmd:help getweather}
+{hline}
+
+{title:Title}
+
+{phang}
+{bf:getweather} {hline 2} Collect detailed weather information from weather stations within a radius of a specified location
+
+{marker syntax}{...}
+{title:Syntax}
+
+{p 8 17 2}
+{opt getweather} 
+{cmd:,} 
+{opt begindate(string)} 
+{opt enddate(string)} 
+{opt latlon(string)}
+[{it:options}]
+
+{synoptset 20 tabbed}{...}
+{synopthdr}
+{synoptline}
+{syntab:Main}
+{synopt:{bf: begindate()}} Date the period of interest begins, e.g. var=date("1/1/1990", "MDY") (string) {p_end}
+{synopt:{bf: enddate()}} Date the period of interest ends, e.g. var=date("12/31/2019", "MDY") (string) {p_end}
+{synopt:{bf: latlon()}} Reference latitude and longitude coordinates of the venue (string)  {p_end}
+{synopt:{bf: working_dir()}} The user's working directory. Can be set to `c(pwd)', a local macro that returns the path to the current working directory (string) {p_end}
+{synopt:{bf: maxdist()}} Maximum permitted distance between the venue and weather stations (integer) {p_end}
+{synopt:{bf: numstat()}} Maximum permitted number of weather stations for each venue. Will keep the closest x stations (integer) {p_end}
+{synopt:{bf: weatherinfo()}} Specific weather metrics (string) {p_end}
+{synopt:{bf: delete_gz()}} Remove any downloaded *.gz files from the user's working directory (string) {p_end}
+{synopt:{bf: delete_op()}} Remove any downloaded *.op files from the user's working directory (string) {p_end}
+{synoptline}
+{p2colreset}{...}
+
+{marker description}{...}
+{title:Description}
+
+{pstd}
+{cmd:getweather} uses noaa good data to link weather stations and venues of interest by latitude and longitude coordinates.  The coordinates are specified in {opt latlon()} and may be a constant or may vary across observations.
+The distance is computed in kilometres.
+
+{pstd}
+Results depend on distance between two points calculated by the {cmd:-globdist-} command; see {help globdist}.
+
+{title:Options}
+
+{dlgtab:Main}
+
+{phang}
+{bf:begindate(}string{bf:)} Date the period of interest begins, e.g. var=date("1/1/1990", "MDY").
+
+{phang}
+{bf:enddate(}string{bf:)} Date the period of interest ends, e.g. var=date("12/31/2019", "MDY").
+
+{phang}
+{bf:latlon(}string{bf:)} Specifies the latitude and longitude coordinates. Can be a single string or reference to a variable containing a vector of coordinates.
+
+{phang}
+{bf:working_dir(}string{bf:)} The user's working directory. Can be set to `c(pwd)', a local macro that returns the path to the current working directory (string)
+
+{phang}
+{bf:maxdist(}integer{bf:)} Numeric value of the maximum distance (in kms) permitted between weather stations and the venue of interest. Defaults to 10,000.
+
+{phang}
+{bf:numstat(}integer{bf:)} Numeric value of the maximum number of stations permitted. Defaults to 1. Closest x stations are kept.
+
+{phang}
+{opt weatherinfo(string)} specifies the metrics the user wishes to keep, defaulting to all. 
+Allowed strings are {opt rainfall}, {opt avgtemp}, {opt dewpoint}, {opt seapressure}, {opt stationpressure}, {opt visibility}, {opt wind}, {opt maxtemp}, {opt mintemp}, {opt snowdepth}, and {opt indicators}. Data quality flags are preserved with each selection.
+
+{phang}
+{bf: delete_gz(}string{bf:)} Remove any downloaded *.gz files from the user's working directory. Set to "y" to remove the downloaded *.gz files from the user's working directory, or omit the {opt delete_gz()} option.
+
+{phang}
+{bf: delete_op(}string{bf:)} Remove any downloaded *.op files from the user's working directory. Set to "y" to remove the downloaded *.op files from the user's working directory, or omit the {opt delete_op()} option.
+
+
+{title:Remarks}
+
+{pstd}
+Accuracy is dependent on the {cmd:-globdist-} command, which assumes a sperical world with a radius of 6378.135km (distance from the center of the Earth to the equator).
+
+{pstd}
+The {opt latlon()} variable is a string, which may lead to truncated coordinates. However, this is not particularly material given accuracies of 1 CM can be achieved with 7 decimal places, and the {cmd:-globdist-} assumption of a spherical Earth.
+
+{pstd}
+To run the {cmd:-getweather-} command the user must have the permissions required to make changes to their current working directory, as the zipped weather files will be downloaded to it. If the user cannot make changes to their current working directory, they may specify the {opt working_dir()} option, or contact their administrator.
+
+
+{title:Revision History}
+
+{pstd}
+1. Version 1
+
+
+{title:Examples}
+
+{phang}{cmd:. getweather , begindate(`beg') enddate(`end') latlon(our_latlon)  numstat(2) working_dir(`c(pwd)')} 
+// local macros define the beginning and end dates, our_latlon is a {opt varname}(string), and the closest two stations will be kept.
+
+{phang}{cmd:. getweather , begindate(`beg') enddate(`end') latlon(our_latlon) maxdist(40) weatherinfo(rainfall avgtemp dewpoint) delete_op(y)} 
+// only stations within 40km will be considered, with the relevant rainfall, mean temperature, and dewpoint infixed.
+The weather data will be removed from the user's directory once the program is complete.
+
+{phang}{cmd:. qui getweather , begindate(`beg') enddate(`end') latlon(our_latlon) maxdist(20) weatherinfo(rainfall)} 
+// quietly syntax is supported
+
+{phang}. Example do-file:{break}
+{cmd:. tostring LAT LON, replace} //convert the latitude and longitude variables to string format
+{break}
+{cmd:. gen latlon_string = LAT+","+LON} //generate a string variable containing both latitude and longitude
+{break}
+{cmd:. loc beg=date("9/1/2015", "MDY")} //the beginning date of the period of interest
+{break}
+{cmd:. loc end=date("6/30/2016", "MDY")} //the end date of the period of interest
+{break}
+{cmd:. getweather , begindate(`beg') enddate(`end') latlon(latlon_string)  numstat(1) working_dir(`c(pwd)')}
+
+{phang}. Worked example:{break}
+{cmd:. set obs 4}
+{break}
+{cmd:. gen our_latlon = ""}
+{break}
+{cmd:. gen loc_label = ""}
+{break}
+{cmd:. replace our_latlon = "29.971829446,31.135999456" if _n==1}
+{break}
+{cmd:. replace our_latlon = "38.889484,-77.035278" if _n==2}
+{break}
+{cmd:. replace our_latlon = "37.234332396,-115.80666344" if _n==3}
+{break}
+{cmd:. replace our_latlon = "40.748817,-73.985428" if _n==4}
+{break}
+{cmd:. replace loc_label = "Sphinx of Giza" if _n==1}
+{break}
+{cmd:. replace loc_label = "Washington Monument" if _n==2}
+{break}
+{cmd:. replace loc_label = "Area 51" if _n==3}
+{break}
+{cmd:. replace loc_label = "Empire State Building" if _n==4}
+{break}
+{cmd:. gen beg = date("01-01-2017", "DMY")}
+{break}
+{cmd:. gen end = date("31-12-2017", "DMY")}
+{break}
+{cmd:. getweather , begindate(beg) enddate(end) latlon(our_latlon) maxdist(40) weatherinfo(rainfall) numstat(2)}
+
+{phang}The above example creates an empty dataset, creates four labelled observations of latitude and longitude coordinates. Stata formatted date variables are used, a feature particularly useful if the dates of interest vary by location.{break}
+
+{phang}It then executes the {cmd:-getweather-} command, and encounters four different outcomes.{break}
+
+{phang}1. All data is found: the nearest station to the Washington Monument provides complete data.{break}
+
+{phang}2. No station within radius: Area 51 had no stations within 40km during 2017. Data flags are assigned accordingly. The user may wish to increase {opt maxdist}(){break}
+
+{phang}3. No record from a station on a given day: Six days of data for one station associated with the Empire State Building encounter this error. Data flags are assigned accordingly.{break}
+
+{phang}4. File not found on NOAA server: every observation associated with the Sphinx of Giza in 2017 encounders this error. Data flags are assigned accordingly. There is no current workaround.{break}
+
+
+{title:Author}
+
+{p 4}Garrick Wright-McNaughton{p_end}
+{p 4}School of Economics and Finance{p_end}
+{p 4}Victoria University of Wellington{p_end}
+
